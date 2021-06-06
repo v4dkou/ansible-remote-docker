@@ -1,0 +1,4 @@
+---
+
+- name: Stop target docker container
+  command: docker stop ansible-runner

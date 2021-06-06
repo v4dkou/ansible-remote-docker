@@ -1,0 +1,25 @@
+---
+- name: Start an SSH tunnel
+  command: "ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -NL {{local_tunnel_path}}:/var/run/docker.sock {{target_host}}"
+
+- name: Stop if target container existed
+  command: docker stop ansible-runner
+  ignore_errors: yes
+
+- name: Start target docker container with Python
+  command: docker run --detach --rm --name ansible-runner python:3.8-slim-buster sleep infinity
+
+#      - name: run docker container
+#        community.docker.docker_container:
+#          docker_host: unix:///tmp/docker.sock # FIXME: Figure out why docker_container cannot connect like that
+#          image: "python:3.8-slim-buster"
+#          name: "ansible-runner"
+#          state: "present"
+#          command: "sleep infinity"
+
+- name: Add container to inventory
+  add_host:
+    name: "ansible-runner"
+    groups: "docker-container"
+    ansible_connection: community.docker.docker_api
+  changed_when: false
